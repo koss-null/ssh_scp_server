@@ -34,7 +34,7 @@ func uploadFileHandler(uploadPath string) http.HandlerFunc {
 
 		fileType := ".tar"
 
-		file := r.Body
+		file, _, _ := r.FormFile("file")
 		fileBytes, err := ioutil.ReadAll(file)
 		if err != nil {
 			renderError(w, "INVALID FILE 1", http.StatusBadRequest)
