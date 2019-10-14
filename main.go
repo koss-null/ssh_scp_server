@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	maxUploadSizeBytes = 10 * 1024 // 10Mb
-	uploadPathM3204    = "./m3204"
-	uploadPathM3205    = "./m3205"
-	maxFileNameLength  = 20
+	maxUploadSizeBits = 15 * 8 * 1024 // 15Mb
+	uploadPathM3204   = "./m3204"
+	uploadPathM3205   = "./m3205"
+	maxFileNameLength = 20
 
 	port = ":8080"
 )
@@ -26,16 +26,25 @@ func renderError(w http.ResponseWriter, msg string, status int) {
 
 func uploadFileHandler(uploadPath string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, maxUploadSizeBytes)
-		if r.ContentLength > maxUploadSizeBytes {
+		r.Body = http.MaxBytesReader(w, r.Body, maxUploadSizeBits)
+		if r.ContentLength > maxUploadSizeBits {
 			renderError(w, "the file is too big ", http.StatusBadRequest)
 			return
 		}
 
 		fileType := ".tar"
 
-		r.ParseMultipartForm(32 << 20)
+		err := r.ParseMultipartForm(32 << 20)
+		if err != nil {
+			renderError(w, "can't extract data, err:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		file, _, err := r.FormFile("data")
+		if file == nil {
+			renderError(w, "wrong data field: check @ and filename", http.StatusBadRequest)
+			return
+		}
 		//file, _, _ := r.FormFile(r.Form.Get("File"))
 		fileBytes, err := ioutil.ReadAll(file)
 		//fmt.Println(string(fileBytes))
