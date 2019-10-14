@@ -35,11 +35,6 @@ func uploadFileHandler(uploadPath string) http.HandlerFunc {
 		fileType := ".tar"
 
 		err := r.ParseMultipartForm(32 << 20)
-		if err != nil {
-			renderError(w, "can't extract data, err:"+err.Error(), http.StatusBadRequest)
-			return
-		}
-
 		file, _, err := r.FormFile("data")
 		if file == nil {
 			renderError(w, "wrong data field: check @ and filename", http.StatusBadRequest)
