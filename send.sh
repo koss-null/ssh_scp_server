@@ -1,7 +1,7 @@
 #!/bin/bash
 
 show_menu() {
-  prompt="Pick the lab number [1-6], type 7 to quit:"
+  title="Pick the lab number [1-6], type 7 to quit:"
   options=("1" "2" "3" "4" "5" "6")
 
   echo "$title"
@@ -23,8 +23,8 @@ show_menu() {
 }
 
 show_menu
-lab_path="~/lab"$LAB_NUM
-ls $lab_path
+lab_path="$HOME/lab"$LAB_NUM
+ls $lab_path > /dev/null
 if [ $? -ne 0 ] ; then
   echo "there is no $lab_path directory (in $HOME)"
   exit 1
