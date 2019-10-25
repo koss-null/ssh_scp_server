@@ -113,7 +113,7 @@ func infoHandler(group int8) http.HandlerFunc {
 			}
 			filesSlice := make([]string, 0, len(files))
 			for j := range files {
-				fmt.Printf("Match str: %t\n", tarFile.MatchString(files[j].Name()))
+				fmt.Printf("Match str: %s %t\n", files[j].Name(), tarFile.MatchString(files[j].Name()))
 				if files[j].IsDir() && tarFile.MatchString(files[j].Name()) {
 					comment := ""
 					if checkValidTar(path + strconv.Itoa(int(i)) + files[j].Name()) {
