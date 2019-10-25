@@ -1,6 +1,8 @@
 package main
 
 import (
+	"archive/tar"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -78,11 +80,62 @@ func uploadFileHandler(uploadPath string, labNum int) http.HandlerFunc {
 	})
 }
 
+func checkValidTar(name string) bool {
+	file, err := os.Open(name)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+	_, err = tar.NewReader(file).Next()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func infoHandler(group int8) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("[%d] Sending info m320%d\n", time.Now().Unix(), group)
+		path := uploadPathM3204
+		if group == 5 {
+			path = uploadPathM3205
+		}
+
+		var tarFile = regexp.MustCompile(`^*.tar$`)
+
+		info := make(map[int8][]string)
+		for i := int8(1); i < 7; i++ {
+			files, err := ioutil.ReadDir(path + strconv.Itoa(int(i)))
+			if err != nil {
+				renderError(w, "it's not possible to get files", http.StatusInternalServerError)
+				continue
+			}
+			filesSlice := make([]string, len(files))
+			for j := range files {
+				if files[j].IsDir() && tarFile.MatchString(files[j].Name()) {
+					comment := ""
+					if checkValidTar(path + strconv.Itoa(int(i)) + files[j].Name()) {
+						comment = " :the tar is not valid, need to be reloaded"
+					}
+					filesSlice[j] = files[j].Name() + comment
+				}
+			}
+		}
+
+		data, _ := json.Marshal(info)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(data)
+	})
+}
+
 func main() {
 	for i := 1; i < 7; i++ {
 		http.HandleFunc("/upload/m3204/lab"+strconv.Itoa(i), uploadFileHandler(uploadPathM3204, i))
 		http.HandleFunc("/upload/m3205/lab"+strconv.Itoa(i), uploadFileHandler(uploadPathM3205, i))
 	}
+
+	http.HandleFunc("/info/m3204", infoHandler(4))
+	http.HandleFunc("/info/m3205", infoHandler(5))
 
 	fmt.Println("Server started on default port", port)
 	fmt.Println(http.ListenAndServe(port, nil))
