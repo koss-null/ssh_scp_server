@@ -125,6 +125,11 @@ func infoHandler(group int8) http.HandlerFunc {
 			info[i] = filesSlice
 		}
 
+		for k, v := range info {
+			fmt.Println(k)
+			fmt.Println(v)
+		}
+
 		data, _ := json.Marshal(info)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(data)
