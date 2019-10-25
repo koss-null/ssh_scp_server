@@ -105,21 +105,24 @@ func infoHandler(group int8) http.HandlerFunc {
 
 		info := make(map[int8][]string)
 		for i := int8(1); i < 7; i++ {
+			fmt.Println("Reading: " + path + strconv.Itoa(int(i)))
 			files, err := ioutil.ReadDir(path + strconv.Itoa(int(i)))
 			if err != nil {
 				renderError(w, "it's not possible to get files", http.StatusInternalServerError)
 				continue
 			}
-			filesSlice := make([]string, len(files))
+			filesSlice := make([]string, 0, len(files))
 			for j := range files {
+				fmt.Printf("Match str: %t\n", tarFile.MatchString(files[j].Name()))
 				if files[j].IsDir() && tarFile.MatchString(files[j].Name()) {
 					comment := ""
 					if checkValidTar(path + strconv.Itoa(int(i)) + files[j].Name()) {
 						comment = " :the tar is not valid, need to be reloaded"
 					}
-					filesSlice[j] = files[j].Name() + comment
+					filesSlice = append(filesSlice, files[j].Name()+comment)
 				}
 			}
+			info[i] = filesSlice
 		}
 
 		data, _ := json.Marshal(info)
