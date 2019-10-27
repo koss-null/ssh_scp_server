@@ -37,7 +37,7 @@ read gn
 if [[ "$gn" =~ ^("m3204"|"m3205")$ ]] ; then
   tar -cf /tmp/my.tar $lab_path
   http_proxy=""
-  curl -X POST -F 'data=@/tmp/my.tar' -H "student_name: $name" -H "type: .tar" -H "Content-Type:multipart/form-data" http://35.228.116.28:8080/upload/$gn/lab$LAB_NUM
+  curl -X POST -F 'data=@/tmp/my.tar' -H "student_name: $name" -H "type: .tar" -H "Content-Type:multipart/form-data" http://35.228.76.237:8080/upload/$gn/lab$LAB_NUM
   rm /tmp/my.tar
   exit 0
 fi
